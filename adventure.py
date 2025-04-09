@@ -3,8 +3,9 @@ This script contains functions to process data files for Dr. Evelyn Reed's
 archaeological expedition to the Lost Temple of Azmar.
 """
 
-import pandas as pd
 import re
+from datetime import datetime
+import pandas as pd
 
 
 def load_artifact_data(excel_filepath):
@@ -36,15 +37,23 @@ def load_location_notes(tsv_filepath):
 
 def extract_journal_dates(journal_text):
     """
-    Extracts all dates in MM/DD/YYYY format from the journal text.
+    Extracts all valid dates in MM/DD/YYYY format from the journal text.
 
     Args:
         journal_text (str): The full text content of the journal.
 
     Returns:
-        list[str]: A list of date strings found in the text.
+        list[str]: A list of valid date strings found in the text.
     """
-    return re.findall(r'\b\d{2}/\d{2}/\d{4}\b', journal_text)
+    potential_dates = re.findall(r'\b\d{2}/\d{2}/\d{4}\b', journal_text)
+    valid_dates = []
+    for date_str in potential_dates:
+        try:
+            datetime.strptime(date_str, "%m/%d/%Y")
+            valid_dates.append(date_str)
+        except ValueError:
+            continue
+    return valid_dates
 
 
 def extract_secret_codes(journal_text):
@@ -59,8 +68,8 @@ def extract_secret_codes(journal_text):
     """
     return re.findall(r'\bAZMAR-\d{3}\b', journal_text)
 
+
 if __name__ == '__main__':
-    # Constants (file paths)
     EXCEL_FILE = 'artifacts.xlsx'
     TSV_FILE = 'locations.tsv'
     JOURNAL_FILE = 'journal.txt'
